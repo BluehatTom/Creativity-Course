@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Testing Simulator</title>
+<style>
+:root{
+  --bg:#eef2f6;
+  --panel:#ffffff;
+  --text:#1f2937;
+  --muted:#526071;
+  --border:#b8c3d1;
+  --accent:#9e1b32;
+  --accent-dark:#751326;
+  --accent-soft:#fff5f7;
+  --user:#f4f6f8;
+  --coach:#f2f7ff;
+  --good:#146c43;
+  --warn:#8a4b08;
+  --focus:#0645d6;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:var(--text);background:var(--bg)}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:wait;opacity:.7}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:-9999px;top:auto}
+.skip-link:focus{left:1rem;top:1rem;z-index:9999;background:#fff;color:#111;padding:.75rem 1rem;border:3px solid var(--focus)}
+header{background:var(--accent);color:#fff;padding:1.15rem 1rem}
+header .wrap,main,footer{max-width:1120px;margin:0 auto}
+h1{margin:0;font-size:clamp(1.9rem,4vw,2.7rem)}
+.tagline{margin:.3rem 0 0;max-width:760px}
+main{padding:1rem}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin:1rem 0;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.lead{font-size:1.08rem}
+h2,h3,h4{line-height:1.25}
+.tutorial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.scenario-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.tutorial-card,.scenario-preview,.summary-card{border:1px solid var(--border);border-radius:12px;padding:1rem;background:#fafbfc}
+.tutorial-card h3,.scenario-preview h3{margin-top:0}
+.example{border-left:4px solid var(--accent);padding-left:.75rem;margin:.65rem 0}
+.caution{border-left-color:var(--warn)}
+.settings{border:1px solid var(--border);border-radius:12px;padding:1rem;background:#f8fafc;margin-top:1rem}
+.settings label{display:block;margin:.55rem 0}
+.settings input{margin-right:.5rem;transform:scale(1.15)}
+.badge{display:inline-block;border:1px solid var(--border);background:#f8fafc;padding:.3rem .65rem;border-radius:999px;font-weight:700;margin-right:.35rem;margin-bottom:.5rem}
+.interview-grid{display:grid;grid-template-columns:minmax(250px,1fr) minmax(0,2.15fr);gap:1rem}
+.sidebar{border:1px solid var(--border);border-radius:12px;padding:1rem;background:#f8fafc;align-self:start}
+.sidebar h3{margin-top:1.15rem}.sidebar h3:first-child{margin-top:0}
+.coverage-list{list-style:none;padding:0;margin:.5rem 0}
+.coverage-list li{border-top:1px solid #d9e0e8;padding:.55rem 0}
+.coverage-list li:first-child{border-top:0}
+.coverage-status{display:block;font-size:.9rem;font-weight:700;margin-top:.15rem}
+.coverage-status.found{color:var(--good)}
+.coverage-status.missing{color:var(--muted)}
+progress{width:100%;height:1rem}
+textarea{width:100%;min-height:100px;padding:.75rem;border:1px solid var(--border);border-radius:8px;color:var(--text);background:#fff}
+.chat{border:1px solid var(--border);border-radius:12px;min-height:320px;max-height:650px;overflow:auto;background:#fff;padding:1rem}
+.msg{max-width:84%;padding:.8rem 1rem;border-radius:14px;margin:.7rem 0}
+.msg.student{margin-left:auto;background:var(--accent-soft);border:1px solid #e5b8c1}
+.msg.user{margin-right:auto;background:var(--user);border:1px solid var(--border)}
+.msg.context{max-width:100%;background:#f8fafc;border:1px dashed var(--border)}
+.msg strong{display:block;margin-bottom:.2rem}
+.thinking{font-style:italic;color:var(--muted)}
+details.coach{max-width:92%;margin:.25rem 0 .8rem;padding:.55rem .75rem;border:1px solid #b9cae5;border-radius:10px;background:var(--coach)}
+details.coach summary{cursor:pointer;font-weight:700}
+.question-area{margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem}
+.question-group{margin-top:1rem}
+.question-group h4{margin:.45rem 0}
+.question-buttons{display:grid;gap:.65rem}
+button{border:0;border-radius:10px;padding:.8rem 1rem;min-height:44px;font-weight:700}
+button.primary{background:var(--accent);color:#fff}
+button.primary:hover,button.primary:focus{background:var(--accent-dark)}
+button.secondary{background:#e2e8f0;color:#111827;border:1px solid #c5ced9}
+button.secondary:hover{background:#d5dde7}
+button.question-btn{text-align:left;background:#fff;color:var(--text);border:1px solid var(--border);font-weight:600}
+button.question-btn:hover{background:#f8fafc;border-color:#7d8997}
+.button-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+button:focus,input:focus,textarea:focus,summary:focus{outline:3px solid var(--focus);outline-offset:2px}
+.end-panel{border:1px solid var(--border);background:#f8fafc;border-radius:12px;padding:1rem;margin-top:1rem}
+.evidence-items{padding-left:1.2rem}
+.evidence-items li{margin:.35rem 0}
+.pattern-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}
+.pattern-card{border:1px solid var(--border);border-radius:10px;padding:.8rem;background:#fafafa}
+.path-step{border-left:4px solid var(--border);padding-left:.8rem;margin:1rem 0}
+.report-card{border:1px solid var(--border);border-radius:12px;padding:1rem;margin:1rem 0;background:#fafafa}
+footer{padding:1rem 1rem 2rem;color:var(--muted)}
+@media(max-width:820px){.interview-grid{grid-template-columns:1fr}.msg{max-width:96%}.chat{max-height:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+@media print{
+  header,#intro,#simulator,#debrief,#finalReflection,.report-actions,footer{display:none!important}
+  body{background:#fff}
+  main{padding:0}
+  #report{display:block!important;border:0;box-shadow:none;margin:0;padding:0}
+  .report-card,.summary-card{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header>
+  <div class="wrap">
+    <h1>User Testing Simulator</h1>
+    <p class="tagline">Two rich, branching interviews for practicing discovery research and prototype usability testing.</p>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+<div id="statusRegion" class="sr-only" role="status" aria-live="polite"></div>
+
+<section id="intro" class="panel" aria-labelledby="introTitle">
+  <h2 id="introTitle" tabindex="-1">Interview before you solve</h2>
+  <p class="lead">Your goal is not to make the stakeholder approve an idea. Your goal is to understand what the person actually did, expected, noticed, and struggled with.</p>
+
+  <h3>Five habits of a strong interviewer</h3>
+  <div class="tutorial-grid">
+    <article class="tutorial-card">
+      <h3>1. Ask about a real event</h3>
+      <p>Past behavior usually provides better evidence than predicted behavior.</p>
+      <p class="example"><strong>Better:</strong> Tell me about the last time this happened.</p>
+      <p class="example caution"><strong>Use carefully:</strong> Would you use this every week?</p>
+    </article>
+    <article class="tutorial-card">
+      <h3>2. Ask for the sequence</h3>
+      <p>Walkthroughs expose actions, transitions, and points of confusion.</p>
+      <p class="example"><strong>Try:</strong> What happened next? What were you thinking then?</p>
+    </article>
+    <article class="tutorial-card">
+      <h3>3. Follow the user's words</h3>
+      <p>If the person mentions a delay, workaround, another person, or hesitation, explore it instead of returning to a fixed script.</p>
+      <p class="example"><strong>Try:</strong> You mentioned the long gap. What made it difficult?</p>
+    </article>
+    <article class="tutorial-card">
+      <h3>4. Look for exceptions</h3>
+      <p>A time when the problem did not occur can reveal conditions that support success.</p>
+      <p class="example"><strong>Try:</strong> Tell me about a time this worked well. What was different?</p>
+    </article>
+    <article class="tutorial-card">
+      <h3>5. Stay neutral</h3>
+      <p>Leading and solution-first questions can produce polite agreement instead of reliable evidence.</p>
+      <p class="example caution"><strong>Avoid:</strong> Would a bigger sign fix this?</p>
+      <p class="example"><strong>Better:</strong> What did you notice first?</p>
+    </article>
+  </div>
+
+  <h3>The two simulations</h3>
+  <div class="scenario-preview-grid">
+    <article class="scenario-preview">
+      <span class="badge">Discovery interview</span>
+      <h3>Campus Activities</h3>
+      <p>Explore why a commuter student stays for some events but skips others before proposing a solution.</p>
+    </article>
+    <article class="scenario-preview">
+      <span class="badge">Customer journey usability test</span>
+      <h3>Online Order Pickup</h3>
+      <p>Investigate a first-time customer’s complete buy-online, pick-up-in-store journey—from the ready message through a missing-item recovery.</p>
+    </article>
+  </div>
+
+  <div class="settings" aria-labelledby="settingsTitle">
+    <h3 id="settingsTitle">Simulation settings</h3>
+    <label><input type="checkbox" id="coachMode" checked> Show optional interview-coach explanations after each response.</label>
+    <label><input type="checkbox" id="responseDelay" checked> Use a one-second pause before the stakeholder responds.</label>
+    <p class="muted">The simulation is fully keyboard operable and does not rely on color alone.</p>
+  </div>
+
+  <div class="button-row"><button class="primary" id="startBtn" type="button">Begin the first interview</button></div>
+</section>
+
+<section id="simulator" class="panel hidden" aria-labelledby="scenarioTitle">
+  <div>
+    <span class="badge" id="scenarioBadge"></span>
+    <span class="badge" id="interviewType"></span>
+  </div>
+  <h2 id="scenarioTitle" tabindex="-1"></h2>
+  <div class="interview-grid">
+    <aside class="sidebar" aria-label="Interview brief and evidence tracker">
+      <h3>Interview brief</h3>
+      <p><strong>Stakeholder:</strong><br><span id="stakeholder"></span></p>
+      <p><strong>Context:</strong><br><span id="description"></span></p>
+      <p><strong>Challenge:</strong><br><span id="challenge"></span></p>
+      <p><strong>Your goal:</strong><br><span id="goal"></span></p>
+
+      <h3 id="coverageHeading">Evidence coverage</h3>
+      <progress id="coverageProgress" max="1" value="0" aria-labelledby="coverageHeading coverageText">0 percent</progress>
+      <p id="coverageText" class="muted">No evidence areas explored yet.</p>
+      <ul id="coverageList" class="coverage-list"></ul>
+
+      <label for="fieldNotes"><strong>Your field notes</strong></label>
+      <textarea id="fieldNotes" placeholder="Record observations, patterns, or questions to revisit."></textarea>
+    </aside>
+
+    <div>
+      <div id="chat" class="chat" role="log" aria-live="polite" aria-relevant="additions" aria-busy="false" aria-label="Interview conversation"></div>
+
+      <div id="questionArea" class="question-area">
+        <h3 id="choiceHeading" tabindex="-1">What do you ask next?</h3>
+        <div id="questionChoices"></div>
+        <div class="button-row">
+          <button class="secondary hidden" id="showAllBtn" type="button">Show all available questions</button>
+          <button class="secondary hidden" id="wrapBtn" type="button">Wrap up this interview</button>
+          <button class="secondary" id="restartScenarioBtn" type="button">Restart this interview</button>
+        </div>
+      </div>
+
+      <div id="endPanel" class="end-panel hidden">
+        <h3>The stakeholder has shared the main points on this path.</h3>
+        <p>You can finish the interview and review the evidence you collected.</p>
+        <button class="primary" id="finishBtn" type="button">Finish interview</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="debrief" class="panel hidden" aria-labelledby="debriefTitle">
+  <h2 id="debriefTitle" tabindex="-1">Interview debrief</h2>
+  <div id="debriefContent"></div>
+  <label for="scenarioReflection"><strong>What is the most important insight from this interview, and what evidence supports it?</strong></label>
+  <textarea id="scenarioReflection"></textarea>
+  <div class="button-row">
+    <button class="primary" id="nextScenarioBtn" type="button">Continue</button>
+  </div>
+</section>
+
+<section id="finalReflection" class="panel hidden" aria-labelledby="finalTitle">
+  <h2 id="finalTitle" tabindex="-1">Final reflection</h2>
+  <label for="r1"><strong>1. Which question types produced the most useful evidence across the two interviews?</strong></label>
+  <textarea id="r1"></textarea>
+  <label for="r2"><strong>2. Describe one point where a weak question could be recovered with a better follow-up.</strong></label>
+  <textarea id="r2"></textarea>
+  <label for="r3"><strong>3. How should the evidence influence the next design or prototype decision?</strong></label>
+  <textarea id="r3"></textarea>
+  <div class="button-row"><button class="primary" id="buildReportBtn" type="button">Build my written report</button></div>
+</section>
+
+<section id="report" class="panel hidden" aria-labelledby="reportTitle">
+  <h2 id="reportTitle" tabindex="-1">User Testing Simulation Report</h2>
+  <div id="reportContent"></div>
+  <div class="button-row report-actions">
+    <button class="primary" id="printBtn" type="button">Print or save as PDF</button>
+    <button class="secondary" id="downloadBtn" type="button">Download text report</button>
+    <button class="secondary" id="restartBtn" type="button">Restart simulation</button>
+  </div>
+</section>
+</main>
+<footer><p>User Testing Simulator - Creativity and Design Thinking</p></footer>
+
+<script type="application/json" id="scenarioData">[{"id":"campus-events","title":"Campus Activities","interviewType":"Discovery interview","stakeholder":"Jordan, a 19-year-old commuter student","shortName":"Jordan","description":"Jordan commutes about 35 minutes each way, takes classes four days a week, and usually leaves campus soon after the last class. Your design team has been asked to understand why commuter students participate in fewer campus activities. No solution has been selected yet.","challenge":"Learn what shapes Jordan's real decisions about staying for or skipping campus events.","goal":"Collect evidence about behavior, context, barriers, exceptions, and priorities before suggesting a solution.","opening":"You meet Jordan after class. Jordan knows that you are studying the commuter experience and has agreed to talk for a few minutes.","openingResponse":"Sure. I can tell you what it is usually like for me.","naturalClose":"That is probably the biggest thing I would want people to understand: once I leave campus, coming back feels like making a whole second trip.","courtesyClose":"I hope that gives you a clearer picture of what it is like from my side.","minimumTurnsBeforeWrap":4,"categories":[{"id":"recent","label":"Recent behavior","description":"A specific event or decision from Jordan's actual experience.","suggestedQuestion":"Tell me about the last campus event you considered attending."},{"id":"routine","label":"Schedule and commute","description":"How class times, work, travel, and daily routines affect the decision.","suggestedQuestion":"Walk me through what usually happens after your last class."},{"id":"decision","label":"Decision process","description":"The moment and information Jordan uses to decide.","suggestedQuestion":"At what point did you decide not to attend?"},{"id":"exception","label":"Exceptions","description":"A time Jordan did stay and what was different.","suggestedQuestion":"Tell me about a time you stayed on campus for something."},{"id":"social","label":"Social and belonging cues","description":"How friends, invitations, and feeling included affect the choice.","suggestedQuestion":"How does knowing someone else is going affect your decision?"},{"id":"environment","label":"Campus environment","description":"How places to wait, study, eat, or spend time affect behavior.","suggestedQuestion":"What is it like to spend a long gap on campus?"},{"id":"priority","label":"Priorities and thresholds","description":"What matters most and how much inconvenience Jordan will tolerate.","suggestedQuestion":"What is the longest gap you would realistically stay through?"}],"initialQuestions":["last_event","typical_day","why_not","better_ads","make_stay"],"questions":[{"id":"last_event","text":"Tell me about the last campus event you considered attending.","type":"Behavioral example","quality":"strong","response":"There was a career event last month. I saw it on Instagram, and it sounded useful, but it started at 6:00. My last class ended at 2:30, so I went home instead.","coach":"A recent example produces concrete details about awareness, timing, and the actual decision.","evidence":[{"category":"recent","text":"Jordan considered a career event but did not attend."},{"category":"routine","text":"The event began three and a half hours after Jordan's last class."}],"unlocks":["after_post","decision_moment","what_instead","event_relevance"]},{"id":"typical_day","text":"Walk me through what usually happens after your last class.","type":"Behavioral walkthrough","quality":"strong","response":"I check whether I have work, walk to my car, and drive home. It takes around 35 minutes. Once I am home, I almost never come back to campus that day.","coach":"A walkthrough exposes routine behavior and the practical point at which returning becomes unlikely.","evidence":[{"category":"routine","text":"Jordan normally leaves immediately and has a 35-minute commute."},{"category":"decision","text":"Leaving campus effectively ends Jordan's campus day."}],"unlocks":["long_gap","return_trip","work_obligations","stay_exception"]},{"id":"why_not","text":"Why do you not attend more campus events?","type":"Broad why question","quality":"weak","response":"Honestly, I do not know. I am usually just ready to leave by then.","coach":"The question sounds simple, but it asks Jordan to explain a broad pattern from memory. A specific example or walkthrough is more likely to reveal evidence.","evidence":[],"unlocks":["last_event","typical_day","decision_moment"]},{"id":"better_ads","text":"Would better advertising make you attend more events?","type":"Leading and solution-first","quality":"weak","response":"Maybe, but I usually see the posts. Knowing that something is happening and staying for it are two different things.","coach":"Jordan politely reacts to your proposed solution. The useful clue is that awareness may not be the main barrier, so the interview should return to behavior.","evidence":[{"category":"decision","text":"Jordan often knows about events; awareness alone does not determine attendance."}],"unlocks":["how_hear","last_event","after_post","more_posts"]},{"id":"make_stay","text":"What would make you stay on campus for an event?","type":"Hypothetical preference","quality":"mixed","response":"Maybe better timing, a friend going, or something useful to do while I wait. It really depends on the day.","coach":"The answer identifies possible themes, but it is still hypothetical. Follow with a real example or threshold question.","evidence":[],"unlocks":["stay_exception","gap_threshold","productive_wait","free_food"]},{"id":"after_post","text":"What happened after you saw the event post?","type":"Process follow-up","quality":"strong","response":"I opened the details, checked the time, and thought about whether I could stay that late. I saved the post for a minute, but once I saw the gap I closed it.","coach":"This follows Jordan's actual decision process instead of asking for a general opinion.","evidence":[{"category":"decision","text":"Jordan checks timing immediately and stops considering an event when the gap feels too long."}],"unlocks":["notice_first","planning_horizon","gap_threshold"]},{"id":"decision_moment","text":"At what point did you decide not to attend?","type":"Decision-point probe","quality":"strong","response":"Right after my last class. I looked at the time and realized I would be waiting more than three hours with nothing planned in between.","coach":"Pinpointing the decision moment helps the team understand what triggered the behavior.","evidence":[{"category":"decision","text":"The decision happens at the end of class when Jordan evaluates the length and usefulness of the gap."}],"unlocks":["gap_feeling","what_instead","gap_threshold"]},{"id":"what_instead","text":"What did you do instead of staying for the event?","type":"Behavioral follow-up","quality":"strong","response":"I drove home, ate, and got ready for work. Even on days I do not work, I usually start homework or help at home once I get back.","coach":"Alternative behavior reveals what the event is competing against, not just what the user says is inconvenient.","evidence":[{"category":"routine","text":"Events compete with work, homework, meals, and responsibilities at home."}],"unlocks":["work_obligations","event_relevance"]},{"id":"event_relevance","text":"How important did that career event feel to you?","type":"Value probe","quality":"strong","response":"It did feel relevant. I am looking for an internship. It just did not feel important enough to wait three and a half hours.","coach":"This separates the value of the event from the inconvenience of attending it.","evidence":[{"category":"priority","text":"Even a relevant event may not outweigh a very long gap."}],"unlocks":["event_value","personal_invitation","gap_threshold"]},{"id":"long_gap","text":"What is it like when you have a long gap on campus?","type":"Experience probe","quality":"strong","response":"It feels like I am stuck between things. I can do some homework, but after a while I feel like I am wasting the day when I could be home or at work.","coach":"The question uncovers the emotional and practical meaning of waiting, not just the number of minutes.","evidence":[{"category":"environment","text":"Long unstructured gaps feel unproductive and make Jordan want to leave."}],"unlocks":["productive_wait","space_wait","gap_feeling"]},{"id":"return_trip","text":"What makes returning to campus later difficult?","type":"Barrier probe","quality":"strong","response":"It is another 35-minute drive each way, and once I am home I have shifted into work or homework mode. Parking is not terrible; it is really the whole second trip.","coach":"This distinguishes the main barrier from an easy but incorrect assumption about parking.","evidence":[{"category":"routine","text":"Returning requires a second 70-minute round trip and a mental shift back to campus."}],"unlocks":["transport_issue","stay_before_leaving","days_pattern"]},{"id":"work_obligations","text":"How do work and other responsibilities affect the decision?","type":"Context probe","quality":"strong","response":"I work two evenings most weeks, and my schedule changes. On other days I still plan around homework and things at home, so I usually decide the same day.","coach":"Context questions explain why a single fixed solution may not fit every day.","evidence":[{"category":"routine","text":"Variable work and home responsibilities make Jordan's availability change by day."},{"category":"decision","text":"Jordan often makes attendance decisions on the same day."}],"unlocks":["days_pattern","planning_horizon","calendar_commitment"]},{"id":"stay_exception","text":"Tell me about a time you did stay on campus for something.","type":"Exception-seeking","quality":"strong","response":"I stayed for a club meeting last semester. It started about 20 minutes after class, and a friend was going. We grabbed coffee and went together.","coach":"Exceptions show the conditions under which the desired behavior already happens.","evidence":[{"category":"exception","text":"Jordan stayed when the event began 20 minutes after class."},{"category":"social","text":"A friend attending made the event easier and more comfortable."}],"unlocks":["compare_timing_friend","what_worked","friend_role"]},{"id":"how_hear","text":"How do you usually hear about campus events?","type":"Context question","quality":"mixed","response":"Mostly Instagram and email. I see more events than I could possibly attend.","coach":"This confirms that awareness exists, but it should be connected to a real decision rather than treated as the whole problem.","evidence":[{"category":"decision","text":"Instagram and email already provide substantial event awareness."}],"unlocks":["after_post","personal_invitation","more_posts"]},{"id":"more_posts","text":"Would posting more often on Instagram solve the problem?","type":"Solution validation","quality":"weak","response":"I would probably see it more, but that would not change when my class ends or how long I would have to wait.","coach":"Jordan evaluates the idea, but the response redirects you to the underlying constraint. Recover by probing timing or a recent decision.","evidence":[],"unlocks":["last_event","gap_threshold","days_pattern"]},{"id":"notice_first","text":"What information do you notice first when you look at an event post?","type":"Attention probe","quality":"strong","response":"The topic first, then the date and time. If the time does not work, I usually stop reading there.","coach":"This reveals the order in which information affects the decision.","evidence":[{"category":"decision","text":"Event time is an early filter that can end consideration before other details matter."}],"unlocks":["event_value","gap_threshold","language_cues"]},{"id":"planning_horizon","text":"How far in advance do you usually decide whether to attend?","type":"Planning probe","quality":"strong","response":"Usually the same day. My work schedule and assignments change enough that I do not like committing too early.","coach":"This identifies when an intervention or invitation would need to influence the decision.","evidence":[{"category":"decision","text":"Jordan usually decides on the day of the event rather than far in advance."}],"unlocks":["calendar_commitment","days_pattern"]},{"id":"gap_feeling","text":"What makes the waiting time feel unproductive?","type":"Meaning probe","quality":"strong","response":"I do not always have a plan for it. I can sit in the library, but after a while I feel like I am just killing time and spending money on food.","coach":"This moves from a general complaint to the conditions that make the gap feel costly.","evidence":[{"category":"environment","text":"Unplanned waiting and the cost of food make long gaps feel wasteful."}],"unlocks":["productive_wait","space_wait","current_workaround"]},{"id":"gap_threshold","text":"What is the longest gap you would realistically stay through?","type":"Threshold probe","quality":"strong","response":"About 45 minutes to an hour. Maybe 90 minutes if the event were especially important, but three hours is too much.","coach":"A threshold turns a vague preference into more actionable evidence.","evidence":[{"category":"priority","text":"Jordan's normal waiting threshold is 45 to 60 minutes, extending to about 90 minutes for a high-value event."}],"unlocks":["days_pattern","best_window","event_value"]},{"id":"event_value","text":"What kinds of events feel worth rearranging your day for?","type":"Priority probe","quality":"strong","response":"Something directly connected to a job, a class, or a group I already care about. A general social event is harder unless someone personally invites me.","coach":"This identifies value criteria instead of asking whether one proposed event sounds good.","evidence":[{"category":"priority","text":"Career, academic, and existing-group relevance increase an event's value."},{"category":"social","text":"A personal invitation makes unfamiliar or general events feel more relevant."}],"unlocks":["personal_invitation","belonging"]},{"id":"personal_invitation","text":"How does a personal invitation change your decision?","type":"Social context probe","quality":"strong","response":"If a professor or friend says, 'You should come,' I pay more attention. It feels like the event is actually meant for me, but it still would not overcome a three-hour wait.","coach":"The answer shows both the value and the limit of social influence.","evidence":[{"category":"social","text":"Direct invitations increase relevance and belonging but do not erase major timing barriers."}],"unlocks":["friend_role","compare_timing_friend","belonging"]},{"id":"productive_wait","text":"What would make the time between class and an event feel useful?","type":"Need-focused follow-up","quality":"mixed","response":"Studying with someone, meeting a professor, using the gym, or having a comfortable place where I already planned to work. Just sitting around is different.","coach":"This is still future-oriented, but it focuses on an underlying need and can be checked against current behavior.","evidence":[{"category":"environment","text":"Jordan is more willing to stay when the gap contains a purposeful activity."}],"unlocks":["space_wait","current_workaround","best_use"]},{"id":"free_food","text":"Would free food make you stay?","type":"Solution-first hypothetical","quality":"weak","response":"Free food is nice, but I would not wait three hours just for pizza.","coach":"The proposed incentive gets a polite reaction but does not explain the underlying decision. Recover by asking about a real exception or waiting threshold.","evidence":[],"unlocks":["stay_exception","gap_threshold","productive_wait"]},{"id":"space_wait","text":"Where do you go when you stay on campus during a gap?","type":"Environmental probe","quality":"strong","response":"Usually the library or a table near the cafe. The library can feel too quiet for a long time, and the cafe gets crowded and makes me feel like I should buy something.","coach":"Specific places reveal environmental friction that a broad satisfaction question would miss.","evidence":[{"category":"environment","text":"Current waiting spaces feel either restrictive, crowded, or tied to spending money."}],"unlocks":["current_workaround","best_use","belonging"]},{"id":"transport_issue","text":"How much do parking and transportation affect the decision?","type":"Assumption check","quality":"strong","response":"Parking is not really the issue once I am here. The problem is the length of the gap and the idea of making another full trip after I leave.","coach":"Testing an assumption can prevent the team from solving the wrong problem.","evidence":[{"category":"routine","text":"Parking is not a primary barrier; the long gap and second trip are more important."}],"unlocks":["stay_before_leaving","days_pattern"]},{"id":"stay_before_leaving","text":"How is the decision different before you leave campus?","type":"Decision contrast","quality":"strong","response":"Before I leave, staying another 30 or 45 minutes feels possible. After I drive home, coming back almost never feels worth it.","coach":"Contrasting two moments reveals a meaningful intervention point without prescribing a solution.","evidence":[{"category":"priority","text":"A short extension before leaving is acceptable; returning after going home is not."}],"unlocks":["best_window","days_pattern"]},{"id":"days_pattern","text":"Are there days when staying is easier than others?","type":"Pattern-seeking","quality":"strong","response":"Tuesdays and Thursdays are easier because my last class ends later. An event around 4:00 would not feel like such a long wait on those days.","coach":"Patterns show when the problem is more or less severe and can challenge one-size-fits-all assumptions.","evidence":[{"category":"routine","text":"Later class days make early-evening events more feasible."}],"unlocks":["best_window","calendar_commitment"]},{"id":"compare_timing_friend","text":"What mattered more that day: the short wait or having a friend there?","type":"Comparative follow-up","quality":"strong","response":"The timing mattered first. My friend made it easier and more fun, but I still would not have waited three hours.","coach":"A comparison helps prioritize two factors that appeared together in the same example.","evidence":[{"category":"priority","text":"Timing is more influential than social support when the gap is very long."},{"category":"social","text":"A friend improves comfort after the timing barrier is manageable."}],"unlocks":["friend_role","best_window"]},{"id":"what_worked","text":"What specifically made that club meeting workable?","type":"Success-factor probe","quality":"strong","response":"I knew exactly when it started, the wait was short, my friend was already staying, and we had a plan for the 20 minutes in between.","coach":"The question separates a successful experience into conditions the team can understand and test.","evidence":[{"category":"exception","text":"A short, planned gap with clear timing and social support made staying workable."}],"unlocks":["current_workaround","best_use","friend_role"]},{"id":"friend_role","text":"What changes when a friend is also attending?","type":"Social context probe","quality":"strong","response":"I do not have to walk in alone, and we can use the time together. It makes an unfamiliar event feel less awkward.","coach":"The response explains the mechanism behind social influence rather than merely stating that friends matter.","evidence":[{"category":"social","text":"A friend reduces uncertainty, awkwardness, and unstructured waiting."}],"unlocks":["belonging","personal_invitation"]},{"id":"calendar_commitment","text":"What makes you commit to an event in advance?","type":"Commitment probe","quality":"strong","response":"I commit when it is clearly important, I know my work schedule, and I can see how it fits around class. Otherwise I leave it as a maybe.","coach":"This reveals the conditions required for an early commitment rather than asking whether reminders would help.","evidence":[{"category":"decision","text":"Advance commitment requires clear value and a predictable schedule fit."}],"unlocks":["best_window","event_value"]},{"id":"belonging","text":"Do campus events always feel like they are meant for commuter students?","type":"Belonging probe","quality":"strong","response":"Not always. Some posts say things like 'come back tonight,' which sounds normal if you live nearby. Sometimes I am not sure whether I will know anyone there.","coach":"This explores inclusion without assuming that scheduling is the only factor.","evidence":[{"category":"social","text":"Some event language and social uncertainty make commuter students feel peripheral."}],"unlocks":["language_cues","personal_invitation"]},{"id":"current_workaround","text":"What do you currently do when you decide to wait on campus?","type":"Workaround probe","quality":"strong","response":"I bring my laptop and try to find a place to work. If I did not plan for the gap, I usually get restless and leave.","coach":"Workarounds show how users currently manage the problem and where that strategy fails.","evidence":[{"category":"environment","text":"Jordan can tolerate a gap when prepared to work, but unplanned gaps usually lead to leaving."}],"unlocks":["space_wait","best_use"]},{"id":"best_use","text":"Which use of the waiting time would make the biggest difference?","type":"Prioritization follow-up","quality":"strong","response":"Probably studying with someone or meeting a professor. Then I feel like I am getting something done instead of just killing time.","coach":"Prioritization clarifies the underlying need without asking Jordan to select a finished solution.","evidence":[{"category":"environment","text":"Purposeful academic activity is more valuable than passive waiting."}],"unlocks":["best_window"]},{"id":"best_window","text":"What event timing would fit your real schedule best?","type":"Pattern synthesis","quality":"strong","response":"Within about an hour of my last class, especially on Tuesdays or Thursdays. A 4:00 event on those days would be much more realistic than 6:00.","coach":"This synthesizes earlier evidence into a concrete pattern while remaining grounded in Jordan's schedule.","evidence":[{"category":"priority","text":"Events within an hour of later class endings are the most feasible."}],"unlocks":["synthesis"]},{"id":"language_cues","text":"What wording makes an event feel less relevant to commuters?","type":"Communication probe","quality":"strong","response":"Anything that assumes I can leave and come back easily, or that everyone is already hanging around campus at night.","coach":"The question identifies a belonging cue rather than treating communication only as promotion frequency.","evidence":[{"category":"social","text":"Language that assumes residential life can signal that an event is not designed for commuters."}],"unlocks":["synthesis"]},{"id":"synthesis","text":"What do people planning campus events most often misunderstand about commuters?","type":"Synthesis question","quality":"strong","response":"They sometimes think the problem is that we did not hear about the event. The bigger issue is that leaving campus is easy and coming back is a major commitment.","coach":"A synthesis question lets the stakeholder frame the central issue in their own words after the interview has established context.","evidence":[{"category":"priority","text":"The central issue is not awareness alone; it is the cost of waiting or making a second trip."}],"unlocks":["closing_insight"],"auto":{"minTurns":5,"minCategories":3}},{"id":"closing_insight","text":"Is there anything else about commuting that campus planners tend to miss?","type":"Open closing question","quality":"strong","response":"Small gaps matter. If I have a clear plan for 30 or 45 minutes, I might stay. If the gap feels empty, I leave even when the event sounds good.","coach":"A broad closing question can surface an insight the interviewer did not anticipate, especially after specific evidence has already been collected.","evidence":[{"category":"priority","text":"The usefulness of a short gap can be as important as the event itself."}],"unlocks":[],"auto":{"minTurns":7,"minCategories":4}}]},{"id":"online-order-pickup","title":"Online Order Pickup","interviewType":"Customer journey usability test","stakeholder":"Elena, a first-time buy-online, pick-up-in-store customer","shortName":"Elena","description":"Riverbend Home & Garden is testing a revised pickup experience for online orders. Elena ordered a cordless drill, picture-hanging hardware, and a small pack of screws. She received a ready-for-pickup text and arrived during a busy Saturday afternoon. She has just completed the pickup journey, including resolving a missing item before leaving the store.","challenge":"Diagnose what Elena did, expected, noticed, and struggled with from the ready notification through the final handoff.","goal":"Identify customer-experience friction, operational gaps, accessibility needs, and moments that strengthen or weaken trust before redesigning messages, signs, staffing, or technology.","opening":"You have just observed Elena complete her pickup at Riverbend Home & Garden. She has agreed to speak with you for a few minutes before leaving. Begin by explaining that you are evaluating the pickup process—not her—and that there are no right or wrong answers.","openingResponse":"Yes, absolutely.","naturalClose":"The pickup did save me from shopping for everything, but it only felt convenient after I found the right counter and knew I had the complete order.","courtesyClose":"I would use pickup again, but clearer arrival instructions and a more deliberate handoff would make me trust it a lot more.","minimumTurnsBeforeWrap":4,"categories":[{"id":"prearrival","label":"Pre-arrival information","description":"What the ready notice communicated and what Elena expected before reaching the store.","suggestedQuestion":"What did the ready-for-pickup message tell you to expect?"},{"id":"wayfinding","label":"Arrival and wayfinding","description":"How Elena found the correct entrance, counter, and line.","suggestedQuestion":"Walk me through where you went after entering the store."},{"id":"wait","label":"Queue and waiting experience","description":"Where time was spent and what made waiting feel organized or uncertain.","suggestedQuestion":"What happened while you were waiting?"},{"id":"verification","label":"Order and identity verification","description":"How the barcode, identification, pickup authorization, and privacy affected the journey.","suggestedQuestion":"What happened when the employee verified your order?"},{"id":"handoff","label":"Order handoff and completeness","description":"How Elena received, checked, and carried the order.","suggestedQuestion":"How did you decide whether the order was complete?"},{"id":"recovery","label":"Service recovery","description":"What happened when an item was missing or the normal process did not work.","suggestedQuestion":"What happened after you noticed an item was missing?"},{"id":"access","label":"Access and customer context","description":"Phone access, visibility, mobility, carrying items, and other conditions that may change the experience.","suggestedQuestion":"What parts of the process would be difficult without a working phone or with limited mobility?"},{"id":"trust","label":"Confidence and business impact","description":"How the experience affected Elena's confidence, perceived convenience, and willingness to use pickup again.","suggestedQuestion":"At what point did you feel most or least confident in the service?"}],"initialQuestions":["walkthrough","expectation","easy","faster","curbside_solution"],"questions":[{"id":"walkthrough","text":"Walk me through the pickup from the moment you arrived until you left.","type":"Customer-journey walkthrough","quality":"strong","response":"I reread the text in the parking lot, entered through the main doors, and looked for online pickup. I saw a Customer Service and Returns sign, so I joined that line. After about six minutes, the employee sent me around the corner to a smaller pickup counter. They scanned my barcode, asked for my ID, and went to retrieve the order. When it came out, I checked the bag and noticed the screws were missing, so the employee had to find them before I left.","coach":"A full journey walkthrough reveals the sequence, handoffs, waits, and recovery moments without assuming where the problem occurred.","evidence":[{"category":"wayfinding","text":"Elena first joined the Customer Service and Returns line and was redirected to a separate pickup counter."},{"category":"wait","text":"The journey included waiting in the wrong line and waiting again while the order was retrieved."},{"category":"handoff","text":"Elena inspected the order and found that a small item was missing before leaving."}],"unlocks":["ready_message","arrival_first","route_choice","barcode_process","handoff","missing_item"]},{"id":"expectation","text":"What were you expecting the pickup experience to be like before you arrived?","type":"Expectation and mental-model question","quality":"strong","response":"I expected a clearly marked pickup desk near the entrance and an order that was already sitting there ready to hand over. I thought I would show the barcode, confirm my name, and be out in five or ten minutes.","coach":"Expectations explain why a process may disappoint even when every step technically works.","evidence":[{"category":"prearrival","text":"Elena expected a clearly marked pickup location near the entrance."},{"category":"wait","text":"Elena expected the ready order to be handed over within five to ten minutes."}],"unlocks":["pickup_expectation","ready_meaning","ready_message"]},{"id":"easy","text":"Was the pickup process easy?","type":"Broad evaluation","quality":"weak","response":"Mostly after I found the right counter. The confusing part was figuring out where to go, and then I was surprised that one item was missing.","coach":"A broad evaluation produces a general answer. Elena offers two clues that can be recovered with a walkthrough or specific follow-up.","evidence":[],"unlocks":["walkthrough","uncertain_moment","route_choice","missing_item"]},{"id":"faster","text":"Do you think online pickup made the shopping trip faster?","type":"Leading benefit question","quality":"weak","response":"Probably compared with finding every item myself, but it did not feel especially fast while I was standing in two lines and waiting for the order to come from the back.","coach":"The question asks Elena to validate a benefit. Her answer suggests separating total time, perceived waiting, and the meaning of 'ready.'","evidence":[],"unlocks":["actual_time","wait_experience","ready_meaning"]},{"id":"curbside_solution","text":"Would curbside pickup have solved the problem?","type":"Solution-first hypothetical","quality":"weak","response":"Maybe, but only if the instructions and status updates were clear. The main issue was not being inside the store. It was not knowing where to go and whether the order was actually ready and complete.","coach":"A proposed alternative can distract from the underlying needs. Elena redirects the conversation toward guidance, status, and completeness.","evidence":[],"unlocks":["arrival_plan","ready_message","route_choice","ready_meaning"]},{"id":"ready_message","text":"What did the ready-for-pickup message tell you?","type":"Artifact comprehension probe","quality":"strong","response":"It said the order was ready, showed the store address and hours, and gave me a barcode. It said to see an associate, but it did not say which entrance or counter to use, whether I needed ID, or what 'ready' meant once I arrived.","coach":"Reviewing the message through the customer's memory identifies missing decision-making information before arrival.","evidence":[{"category":"prearrival","text":"The ready notice included a barcode and store details but not the pickup location, ID requirement, or arrival steps."}],"unlocks":["message_detail","arrival_plan","id_surprise","ready_meaning"]},{"id":"message_detail","text":"What information would have been most useful in that message?","type":"Information-needs follow-up","quality":"strong","response":"Which entrance to use, the words I should look for on the sign, what to bring, and whether the order would be at the counter or still need to be retrieved. A short numbered list would have been enough.","coach":"This asks for the information needed to act, not for a particular graphic or technology.","evidence":[{"category":"prearrival","text":"Elena needed entrance, sign, verification, and retrieval expectations in a short sequence."}],"unlocks":["entry_path","pickup_expectation","no_phone","priority"]},{"id":"arrival_plan","text":"Before entering, what was your plan for finding the order?","type":"Pre-arrival behavior probe","quality":"strong","response":"I planned to go through the main entrance and look for a pickup sign. If I did not see one, I was going to ask the first employee I found.","coach":"A plan question reveals the customer's mental model before environmental cues alter the behavior.","evidence":[{"category":"prearrival","text":"Elena expected the main entrance to provide a visible pickup cue or an employee who could redirect her."}],"unlocks":["arrival_first","route_choice","entry_path"]},{"id":"pickup_expectation","text":"Where did you expect the pickup point to be?","type":"Spatial expectation probe","quality":"strong","response":"Near the entrance or combined with customer service. I did not expect it to be around the corner behind a seasonal display.","coach":"Spatial expectations help explain why a technically present sign may still fail.","evidence":[{"category":"wayfinding","text":"Elena expected pickup near the entrance or customer service, not around a corner behind merchandise."}],"unlocks":["entry_path","sign_visibility","route_choice"]},{"id":"ready_meaning","text":"What did the word 'ready' mean to you?","type":"Language and expectation probe","quality":"strong","response":"I assumed the complete order had already been gathered and was waiting at the pickup counter. I did not expect the employee to disappear into the back for several minutes or for one item to be on a different shelf.","coach":"Testing the meaning of a service promise can reveal a trust gap between operations and customer expectations.","evidence":[{"category":"wait","text":"Elena interpreted 'ready' as staged at the counter, not merely located somewhere in the store."},{"category":"trust","text":"The retrieval delay and missing item weakened the credibility of the ready notification."}],"unlocks":["actual_time","trust_ready","status_update","missing_item"]},{"id":"arrival_first","text":"What did you notice first when you entered the store?","type":"Attention probe","quality":"strong","response":"A large seasonal display and the Customer Service and Returns sign. I did not see the smaller Online Order Pickup sign until after an employee pointed around the corner.","coach":"Attention questions reveal the real visual hierarchy rather than assuming customers see the intended sign.","evidence":[{"category":"wayfinding","text":"Promotional displays and the customer-service sign attracted attention before the pickup sign."}],"unlocks":["sign_visibility","route_choice","busy_period","entry_path"]},{"id":"route_choice","text":"How did you decide which line to join?","type":"Decision-process probe","quality":"strong","response":"Customer Service and Returns was the only obvious service sign, and people were already lined up there. I assumed online pickup was part of that counter.","coach":"This identifies both the environmental and social cues that shaped the wrong route.","evidence":[{"category":"wayfinding","text":"Elena chose the wrong line because it was the most visible service point and other customers were queued there."}],"unlocks":["wrong_line","social_cues","sign_wording","queue_order"]},{"id":"wrong_line","text":"When did you realize you were in the wrong line?","type":"Critical-moment probe","quality":"strong","response":"Only when I reached the counter after about six minutes. The employee was nice, but by then I had already invested time in the wrong place.","coach":"Pinpointing discovery of the error shows whether the process prevents mistakes early or only corrects them after cost is incurred.","evidence":[{"category":"wayfinding","text":"The incorrect route was not corrected until Elena reached the front of the wrong line."},{"category":"wait","text":"The wayfinding error added about six minutes to the journey."}],"unlocks":["uncertain_moment","wait_experience","staff_ack","entry_path"]},{"id":"sign_visibility","text":"What made the pickup sign easy or difficult to notice?","type":"Environmental probe","quality":"strong","response":"It was smaller than the customer-service sign, mounted above eye level, and partly hidden by the seasonal display from the entrance. It also looked like one of several department signs.","coach":"The response identifies placement, competition, scale, and visibility rather than merely asking for a larger sign.","evidence":[{"category":"wayfinding","text":"The pickup sign was visually subordinate, high, and obstructed from the main entrance."}],"unlocks":["bigger_sign","entry_path","busy_period","sign_wording"]},{"id":"bigger_sign","text":"Would a bigger sign solve the problem?","type":"Solution validation","quality":"weak","response":"It might help, but only if it is visible before I choose a line and clearly says where to go. A bigger sign around the corner would still be too late.","coach":"Elena resists validating a single design change and redirects attention to timing, location, and wording.","evidence":[],"unlocks":["entry_path","sign_wording","accessible_route"]},{"id":"sign_wording","text":"What wording would have made the route clearer?","type":"Comprehension follow-up","quality":"strong","response":"Something direct like, 'Online Order Pickup — continue past Customer Service and turn right.' The words 'pickup' and an arrow matter more to me than a department name.","coach":"This uncovers the action and destination customers need without treating wording alone as the complete solution.","evidence":[{"category":"wayfinding","text":"Elena needs action-oriented wording and directional guidance before reaching the wrong queue."}],"unlocks":["entry_path","accessible_route","priority"]},{"id":"social_cues","text":"How did other customers influence where you went?","type":"Social-cue probe","quality":"strong","response":"People with boxes and bags were lined up at Customer Service, so it looked like the place for pickups too. I followed the crowd rather than searching for another counter.","coach":"Customer behavior can overpower signage, especially when the environment is busy.","evidence":[{"category":"wayfinding","text":"The visible queue reinforced Elena's incorrect assumption about the pickup location."}],"unlocks":["queue_order","busy_period","entry_path"]},{"id":"entry_path","text":"At what point should the pickup route become obvious?","type":"Spatial-threshold question","quality":"strong","response":"Before I commit to a line—ideally from the entrance or in the ready message. Once I have waited several minutes, the system has already failed even if someone redirects me politely.","coach":"This identifies when guidance must appear, not just what the final sign should look like.","evidence":[{"category":"wayfinding","text":"Pickup guidance must be visible before customers choose a queue."},{"category":"prearrival","text":"The route could also be established before arrival through the ready notice."}],"unlocks":["accessible_route","priority","pickup_expectation"]},{"id":"busy_period","text":"How did the Saturday crowd change the experience?","type":"Stress-condition probe","quality":"strong","response":"It made the signs harder to see and made me less willing to stop in the aisle and look around. At the pickup counter, I was not sure who was next because people were standing in different places.","coach":"Stress-condition questions test whether the journey still works under the conditions most likely to create business pressure.","evidence":[{"category":"wayfinding","text":"Crowding reduced sign visibility and discouraged Elena from pausing to search."},{"category":"wait","text":"The pickup counter lacked an obvious queue during the busy period."}],"unlocks":["queue_order","staff_ack","more_staff","accessible_route"]},{"id":"uncertain_moment","text":"At what point did you feel most unsure about what to do?","type":"Critical-moment probe","quality":"strong","response":"When I left the first line and walked around the corner. I saw a counter and a few people standing nearby, but there was no clear line or employee acknowledgment, so I did not know whether to wait or speak up.","coach":"The question isolates the moment where wayfinding changes into queue and service uncertainty.","evidence":[{"category":"wait","text":"Elena was uncertain how to enter the pickup queue or get acknowledged after being redirected."},{"category":"trust","text":"Lack of acknowledgment reduced confidence that the process was organized."}],"unlocks":["queue_order","staff_ack","wait_experience","confidence"]},{"id":"actual_time","text":"Where did the pickup time actually go?","type":"Time breakdown","quality":"strong","response":"About six minutes in the wrong line, two minutes figuring out the pickup counter, around seven minutes while the employee retrieved the order, and another five minutes resolving the missing screws. It was close to twenty minutes total.","coach":"A time breakdown distinguishes operational delays from wayfinding and recovery costs.","evidence":[{"category":"wait","text":"The roughly twenty-minute journey included wrong-line, retrieval, and missing-item delays."}],"unlocks":["ready_meaning","wrong_line","missing_item","status_update"]},{"id":"wait_experience","text":"What made the waiting feel organized or unorganized?","type":"Waiting-experience probe","quality":"strong","response":"It felt unorganized when I did not know who was next or what the employee was doing in the back. Waiting is easier when someone acknowledges me and tells me what is happening.","coach":"Perceived waiting depends on information and acknowledgment, not only elapsed minutes.","evidence":[{"category":"wait","text":"Unclear queue order and lack of retrieval status made the wait feel unorganized."},{"category":"trust","text":"Acknowledgment and status information would increase confidence during the wait."}],"unlocks":["status_update","queue_order","staff_ack","confidence"]},{"id":"queue_order","text":"How did you know when it was your turn at the pickup counter?","type":"Queue usability probe","quality":"strong","response":"I did not. There was no marked line, and one person was waiting for an employee to return while another was trying to ask a question. I waited until someone made eye contact with me.","coach":"This reveals the customer-created workaround used when the service order is not externally visible.","evidence":[{"category":"wait","text":"The pickup counter lacked a clear queue, so Elena relied on eye contact to enter the service sequence."}],"unlocks":["staff_ack","busy_period","more_staff"]},{"id":"staff_ack","text":"What difference would early employee acknowledgment have made?","type":"Service-touchpoint probe","quality":"strong","response":"Even a quick 'I'll be with you next' would have told me I was in the right place. I did not need immediate service; I needed to know I had entered the process correctly.","coach":"This separates acknowledgment from staffing capacity and identifies a low-cost trust signal.","evidence":[{"category":"wait","text":"A brief acknowledgment would confirm Elena's queue position without requiring immediate service."},{"category":"trust","text":"Being recognized would increase confidence that she was in the correct process."}],"unlocks":["status_update","more_staff","priority"]},{"id":"status_update","text":"What information would have helped while the employee retrieved the order?","type":"Status-information probe","quality":"strong","response":"Just 'Your order is being retrieved; it should be a few minutes.' If there were a delay or an item on another shelf, I would rather know than stand there wondering whether something went wrong.","coach":"This identifies the minimum information needed to make invisible work understandable to the customer.","evidence":[{"category":"wait","text":"Elena wants acknowledgment, retrieval status, and notice of unusual delays."}],"unlocks":["confidence","trust_ready","priority"]},{"id":"more_staff","text":"Would adding more employees fix the pickup experience?","type":"Solution validation","quality":"weak","response":"It might reduce the wait, but extra people would not fix the wrong-line problem or tell customers what 'ready' means. Clearer steps could prevent some of the work employees are doing now.","coach":"The proposed solution addresses capacity but not the information and process failures producing avoidable demand.","evidence":[],"unlocks":["entry_path","status_update","ready_meaning","priority"]},{"id":"barcode_process","text":"What happened when the employee verified your order?","type":"Process follow-up","quality":"strong","response":"I showed the barcode from the text, the employee scanned it, and then asked for my photo ID and last name. It worked, but I was surprised because the message had not mentioned ID.","coach":"This distinguishes the successful verification step from the pre-arrival expectation gap.","evidence":[{"category":"verification","text":"The barcode worked, but Elena was unexpectedly asked for photo identification and her last name."}],"unlocks":["id_surprise","privacy","delegate_pickup","phone_context"]},{"id":"id_surprise","text":"How did the unannounced ID requirement affect you?","type":"Expectation and access probe","quality":"strong","response":"I had my license, so it was fine for me. But I could imagine leaving a wallet in the car or sending my husband with the barcode and having him get turned away.","coach":"Unexpected verification requirements can create avoidable failure even when the current participant succeeds.","evidence":[{"category":"verification","text":"The ready notice did not prepare Elena for the photo-ID requirement."},{"category":"access","text":"An unannounced ID rule could cause a failed trip or prevent an authorized substitute from collecting the order."}],"unlocks":["delegate_pickup","no_phone","message_detail"]},{"id":"delegate_pickup","text":"What would happen if someone else needed to pick up the order for you?","type":"Exception-path probe","quality":"strong","response":"I would not know whether the barcode was enough or whether I had to add that person online first. The message did not explain it, so I would probably call the store before sending anyone.","coach":"Exception paths often generate calls and failed trips when policy is invisible to customers.","evidence":[{"category":"verification","text":"Pickup authorization for another person is unclear and would likely generate a phone call."}],"unlocks":["help_location","priority","message_detail"]},{"id":"privacy","text":"Did showing your phone or identification create any privacy concerns?","type":"Privacy and context probe","quality":"strong","response":"A little. People were standing close behind me, and the employee said my full name while my order number was on the screen. It was not a major problem, but a more defined counter position would feel less exposed.","coach":"A successful transaction can still contain privacy friction that observation alone may miss.","evidence":[{"category":"verification","text":"Close queue spacing and spoken customer details made the verification feel somewhat exposed."}],"unlocks":["busy_period","accessible_route","priority"]},{"id":"phone_context","text":"How did using your phone affect the pickup?","type":"Device-context probe","quality":"strong","response":"The barcode was convenient, but the store signal was weak and the message took a moment to load. My battery was at 12 percent, so I took a screenshot in case the page stopped working.","coach":"Device-context questions reveal resilience needs hidden by a successful scan.","evidence":[{"category":"access","text":"Weak signal and low battery could interfere with loading the pickup barcode."}],"unlocks":["no_phone","privacy","order_not_found"]},{"id":"no_phone","text":"What should happen if a customer cannot load the barcode or does not have a working phone?","type":"Fallback-path question","quality":"strong","response":"There should be another way using the order number, name, and ID, and the message should say that before the customer arrives. It should feel like a normal option, not an exception that causes a scene.","coach":"This defines a resilient and non-stigmatizing fallback rather than assuming every customer can use the preferred channel.","evidence":[{"category":"access","text":"Customers need a clearly communicated non-phone verification method."},{"category":"verification","text":"Fallback verification should use ordinary order details and be presented as a normal option."}],"unlocks":["order_not_found","help_location","priority"]},{"id":"handoff","text":"How was the order handed to you?","type":"Handoff walkthrough","quality":"strong","response":"The employee brought out the drill box and a sealed paper bag with the smaller items, set them on the counter, and said, 'You're all set.' There was no item-by-item check, so I compared the bag to the order on my phone.","coach":"A handoff walkthrough reveals how responsibility for completeness shifts between employee and customer.","evidence":[{"category":"handoff","text":"The handoff did not include an item-by-item confirmation, so Elena checked the order herself."}],"unlocks":["order_check","package_labels","confidence","carrying_order"]},{"id":"order_check","text":"How did you decide whether the order was complete?","type":"Verification behavior","quality":"strong","response":"I opened the order details on my phone and counted the items. The drill and picture hangers were there, but the small pack of screws was not in the bag.","coach":"This reveals the customer's workaround and the exact point where a completeness failure became visible.","evidence":[{"category":"handoff","text":"Elena had to use her phone to perform her own item-by-item completeness check."},{"category":"recovery","text":"The missing screws were discovered only because Elena inspected the order before leaving."}],"unlocks":["missing_item","package_labels","confidence"]},{"id":"package_labels","text":"What on the package helped or hindered your check?","type":"Artifact usability probe","quality":"strong","response":"The bag had my name and order number, but not a visible item list. The printed receipt was folded inside, so I would have had to open the bag anyway to know what should be there.","coach":"The question examines whether the physical artifact supports the customer's task at the moment of handoff.","evidence":[{"category":"handoff","text":"The package label identified the order but did not make item completeness visible."}],"unlocks":["missing_item","priority","accessible_route"]},{"id":"missing_item","text":"What happened after you noticed the screws were missing?","type":"Service-recovery walkthrough","quality":"strong","response":"I told the employee, who reopened the order on the computer and checked two shelves. The screws had been staged separately. It took about five more minutes, and I felt awkward because people were waiting behind me.","coach":"A recovery walkthrough exposes operational fragmentation, additional time, and the customer's social discomfort.","evidence":[{"category":"recovery","text":"The missing item was staged separately and required a five-minute search."},{"category":"trust","text":"Elena felt awkward raising the issue while other customers waited."}],"unlocks":["recovery_feeling","discover_home","help_location","order_not_found","trust_ready"]},{"id":"recovery_feeling","text":"What made the recovery feel helpful or uncomfortable?","type":"Emotional recovery probe","quality":"strong","response":"The employee believed me and kept looking, which helped. What felt uncomfortable was not knowing whether I was holding up the line or asking for too much over a small item.","coach":"Good recovery includes both solving the operational problem and reducing the social cost of reporting it.","evidence":[{"category":"recovery","text":"Employee belief and persistence supported recovery, but the open queue made Elena feel responsible for the delay."}],"unlocks":["help_location","trust_ready","priority"]},{"id":"order_not_found","text":"What should happen if the employee cannot find an order marked ready?","type":"Failure-state probe","quality":"strong","response":"Someone should own the problem, explain what is being checked, and give me a choice to wait, receive a call, or cancel. I would not want to be sent from counter to counter.","coach":"Failure-state questions clarify ownership, communication, and customer options before a rare problem becomes a crisis.","evidence":[{"category":"recovery","text":"An order-not-found case needs one owner, visible status, and clear customer options."}],"unlocks":["help_location","status_update","trust_ready","next_time"]},{"id":"help_location","text":"What would make it easy to get help without restarting the journey?","type":"Recovery-need probe","quality":"strong","response":"The pickup counter should remain the owner of the issue, even if another department has to fix it. A visible help message in the text or order screen would also be useful if I discovered the problem after leaving.","coach":"This focuses on continuity and ownership rather than forcing the customer to navigate the organization.","evidence":[{"category":"recovery","text":"The pickup team should own exceptions and provide a visible post-pickup help channel."}],"unlocks":["discover_home","priority","next_time"]},{"id":"discover_home","text":"What if you had discovered the missing item after getting home?","type":"Consequence probe","quality":"strong","response":"That would have been much worse. I live about 25 minutes away, so a return trip for a small pack of screws would erase the convenience of pickup and make me question using it again.","coach":"Consequence questions reveal the downstream cost of a failure that may look minor inside the store.","evidence":[{"category":"trust","text":"A 50-minute round trip for a missing item would erase the perceived value of pickup."},{"category":"recovery","text":"Completeness errors become substantially more costly after the customer leaves."}],"unlocks":["tradeoff","next_time","priority"]},{"id":"carrying_order","text":"How did carrying the order affect the final part of the journey?","type":"Physical-context probe","quality":"strong","response":"The drill box was bulky and the paper bag needed a separate hand. There was not a cart at the pickup counter, so opening the exit door and checking my phone at the same time was awkward.","coach":"Physical context can expose accessibility and service-design needs that the digital flow does not show.","evidence":[{"category":"access","text":"The bulky multi-piece order was difficult to carry while using a phone and opening doors."}],"unlocks":["accessible_route","busy_period","priority"]},{"id":"accessible_route","text":"What would make the pickup route work for customers with different mobility, vision, or carrying needs?","type":"Accessibility probe","quality":"strong","response":"Use large, high-contrast words and arrows instead of color alone, keep the route clear of displays, provide a defined queue with room to maneuver, and have carts available for bulky orders.","coach":"This checks that the physical journey is perceivable and usable without relying on a single visual cue or narrow path.","evidence":[{"category":"access","text":"Accessible pickup requires high-contrast text and arrows, a clear route, maneuvering space, and carts for bulky orders."}],"unlocks":["priority","synthesis"]},{"id":"confidence","text":"At what point were you least confident that the process was working?","type":"Confidence probe","quality":"strong","response":"After I reached the pickup counter but before anyone acknowledged me. Later, the missing item created a different kind of doubt—I wondered whether I should trust the bag without checking every order in the future.","coach":"Confidence questions reveal both process uncertainty and the longer-term behavioral effect of a quality failure.","evidence":[{"category":"trust","text":"Lack of acknowledgment reduced process confidence, and the missing item reduced confidence in future handoffs."}],"unlocks":["trust_ready","order_check","next_time"]},{"id":"trust_ready","text":"How did the experience affect your trust in the word 'ready'?","type":"Service-promise probe","quality":"strong","response":"Now I would read it as 'the system thinks the items are somewhere in the store,' not 'the complete order is waiting for me.' That is a lower level of trust than I had before.","coach":"This identifies how an operational mismatch changes the meaning of a customer-facing promise.","evidence":[{"category":"trust","text":"The experience weakened Elena's belief that a ready notice means the complete order is staged for immediate pickup."}],"unlocks":["tradeoff","next_time","priority"]},{"id":"tradeoff","text":"What is the tradeoff between pickup and shopping for the items yourself?","type":"Comparative synthesis","quality":"strong","response":"Pickup saves the effort of finding products, especially when I know exactly what I need. But I give up control over checking the items as I select them, so the store has to replace that confidence with a clear route and a careful handoff.","coach":"The comparison identifies the customer value the service creates and the assurance it must provide in return.","evidence":[{"category":"trust","text":"Pickup trades customer control for convenience, so the business must provide strong guidance and completeness assurance."}],"unlocks":["priority","synthesis","next_time"]},{"id":"next_time","text":"How would this experience change what you do the next time you place an order?","type":"Future behavior with evidence","quality":"mixed","response":"I would still consider pickup, but I would allow more time and check every item before leaving. For a very small order, I might just shop in the store if I thought pickup could take twenty minutes.","coach":"Future behavior is imperfect evidence, but after a concrete experience it can reveal likely business consequences and new customer workarounds.","evidence":[{"category":"trust","text":"Elena would build extra time and verification into future pickups and may shop instead for small orders."}],"unlocks":["priority","synthesis"]},{"id":"priority","text":"Which improvement would make the biggest difference to you?","type":"Prioritization question","quality":"strong","response":"Make the route unmistakable before I enter a line, then confirm the order is complete at handoff. Faster retrieval would be nice, but those two changes would prevent the most frustrating parts.","coach":"Prioritization helps distinguish core journey failures from desirable enhancements.","evidence":[{"category":"trust","text":"Elena prioritizes early wayfinding and reliable completeness confirmation over marginal speed improvements."}],"unlocks":["synthesis","closing_test"]},{"id":"synthesis","text":"What does a first-time pickup customer most need from this service?","type":"Synthesis question","quality":"strong","response":"A clear path from the ready message to the right counter, acknowledgment when I arrive, and confidence that the order I receive is complete.","coach":"After evidence has accumulated, a synthesis question helps the customer state the central journey need concisely.","evidence":[{"category":"trust","text":"The core need is continuity: clear arrival guidance, acknowledgment, and a complete handoff."}],"unlocks":["closing_test"],"auto":{"minTurns":5,"minCategories":3}},{"id":"closing_test","text":"What should the business test in the next version of the pickup process?","type":"Open closing question","quality":"strong","response":"Test whether a first-time customer can go from the parking lot to the correct queue without asking for help, whether the queue still makes sense during a rush, and whether customers can verify a complete order before leaving—including when the phone, barcode, or staging process fails.","coach":"A closing test question identifies realistic conditions and failure cases without replacing the team's responsibility to interpret the evidence.","evidence":[{"category":"wayfinding","text":"The next test should verify unaided routing from arrival to the correct queue."},{"category":"recovery","text":"The next test should include rush conditions, device failure, and incomplete order staging."},{"category":"handoff","text":"The next test should verify that customers can confirm order completeness before departure."}],"unlocks":[],"auto":{"minTurns":7,"minCategories":4}}],"openingQuestion":"Thanks for taking a few minutes to talk with me. We are evaluating the pickup process, not you, so there are no right or wrong answers. I would like to understand what happened from your perspective. Is it okay if I ask you a few questions about today's visit?"}]</script>
+<script>
+"use strict";
+
+const scenarios = JSON.parse(document.getElementById("scenarioData").textContent);
+const byId = (id) => document.getElementById(id);
+const sections = ["intro", "simulator", "debrief", "finalReflection", "report"];
+
+let scenarioIndex = 0;
+let logs = [];
+let state = null;
+let showAllQuestions = false;
+let responsePending = false;
+let reportPlainText = "";
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function showSection(id){
+  sections.forEach((sectionId) => byId(sectionId).classList.toggle("hidden", sectionId !== id));
+}
+
+function announce(message){
+  const region = byId("statusRegion");
+  region.textContent = "";
+  window.setTimeout(() => { region.textContent = message; }, 10);
+}
+
+function currentScenario(){ return scenarios[scenarioIndex]; }
+
+function questionMap(scenario){
+  return new Map(scenario.questions.map((question) => [question.id, question]));
+}
+
+function createState(scenario){
+  return {
+    scenarioId: scenario.id,
+    askedIds: [],
+    availableIds: new Set(scenario.initialQuestions),
+    evidence: [],
+    categoriesFound: new Set(),
+    turns: [],
+    fieldNotes: "",
+    reflection: "",
+    lastUnlocked: [],
+    closeAdded: false
+  };
+}
+
+function addMessage(kind, speaker, text, options = {}){
+  const article = document.createElement("article");
+  article.className = `msg ${kind}`;
+  if(options.id) article.id = options.id;
+  if(options.hiddenFromAT) article.setAttribute("aria-hidden", "true");
+
+  const name = document.createElement("strong");
+  name.textContent = speaker;
+  const body = document.createElement("span");
+  body.textContent = text;
+  article.append(name, body);
+  byId("chat").appendChild(article);
+  byId("chat").scrollTop = byId("chat").scrollHeight;
+  return article;
+}
+
+function addCoachNote(question){
+  if(!byId("coachMode").checked) return;
+  const details = document.createElement("details");
+  details.className = "coach";
+  const summary = document.createElement("summary");
+  summary.textContent = "Interview coach: What did this question do?";
+  const type = document.createElement("p");
+  type.innerHTML = `<strong>Question type:</strong> ${escapeHtml(question.type)}`;
+  const quality = document.createElement("p");
+  const label = question.quality === "strong" ? "Generally productive" : question.quality === "mixed" ? "Useful with follow-up" : "Limited evidence; recover with a behavioral follow-up";
+  quality.innerHTML = `<strong>Effect:</strong> ${escapeHtml(label)}`;
+  const explanation = document.createElement("p");
+  explanation.textContent = question.coach;
+  details.append(summary, type, quality, explanation);
+  byId("chat").appendChild(details);
+}
+
+function addEvidence(evidenceItems){
+  evidenceItems.forEach((item) => {
+    const duplicate = state.evidence.some((existing) => existing.category === item.category && existing.text === item.text);
+    if(!duplicate){
+      state.evidence.push(item);
+      state.categoriesFound.add(item.category);
+    }
+  });
+}
+
+function applyAutoUnlocks(scenario){
+  scenario.questions.forEach((question) => {
+    if(!question.auto || state.askedIds.includes(question.id) || state.availableIds.has(question.id)) return;
+    const turnsOk = state.turns.length >= (question.auto.minTurns || 0);
+    const categoriesOk = state.categoriesFound.size >= (question.auto.minCategories || 0);
+    if(turnsOk && categoriesOk) state.availableIds.add(question.id);
+  });
+}
+
+function updateCoverage(){
+  const scenario = currentScenario();
+  const found = state.categoriesFound.size;
+  byId("coverageProgress").max = scenario.categories.length;
+  byId("coverageProgress").value = found;
+  byId("coverageProgress").textContent = `${found} of ${scenario.categories.length}`;
+  byId("coverageText").textContent = found === 0 ? "No evidence areas explored yet." : `${found} of ${scenario.categories.length} evidence areas explored.`;
+
+  const list = byId("coverageList");
+  list.innerHTML = "";
+  scenario.categories.forEach((category) => {
+    const li = document.createElement("li");
+    const label = document.createElement("strong");
+    label.textContent = category.label;
+    const status = document.createElement("span");
+    const isFound = state.categoriesFound.has(category.id);
+    status.className = `coverage-status ${isFound ? "found" : "missing"}`;
+    status.textContent = isFound ? "Evidence collected" : "Not yet explored";
+    li.append(label, status);
+    list.appendChild(li);
+  });
+}
+
+function availableQuestions(){
+  const scenario = currentScenario();
+  applyAutoUnlocks(scenario);
+  const map = questionMap(scenario);
+  return [...state.availableIds]
+    .filter((id) => !state.askedIds.includes(id) && map.has(id))
+    .map((id) => map.get(id));
+}
+
+function renderQuestionGroup(title, questions){
+  if(!questions.length) return null;
+  const section = document.createElement("section");
+  section.className = "question-group";
+  const heading = document.createElement("h4");
+  heading.textContent = title;
+  const buttons = document.createElement("div");
+  buttons.className = "question-buttons";
+  questions.forEach((question) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "question-btn";
+    button.textContent = question.text;
+    button.addEventListener("click", () => askQuestion(question.id));
+    buttons.appendChild(button);
+  });
+  section.append(heading, buttons);
+  return section;
+}
+
+function renderQuestions(){
+  const scenario = currentScenario();
+  const available = availableQuestions();
+  const container = byId("questionChoices");
+  container.innerHTML = "";
+  byId("showAllBtn").classList.add("hidden");
+  byId("endPanel").classList.add("hidden");
+  byId("questionArea").classList.remove("hidden");
+
+  if(!available.length){
+    byId("questionArea").classList.add("hidden");
+    if(!state.closeAdded){
+      addMessage("user", scenario.shortName, scenario.naturalClose);
+      state.closeAdded = true;
+    }
+    byId("endPanel").classList.remove("hidden");
+    byId("finishBtn").focus();
+    announce("The interview path is complete. Finish the interview when ready.");
+    return;
+  }
+
+  const limit = showAllQuestions ? Number.POSITIVE_INFINITY : 7;
+  let displayedCount = 0;
+
+  if(state.turns.length === 0){
+    const openingShown = available.slice(0, limit);
+    const openingGroup = renderQuestionGroup("Choose an opening question", openingShown);
+    if(openingGroup) container.appendChild(openingGroup);
+    displayedCount = openingShown.length;
+  }else{
+    const directIds = new Set(state.lastUnlocked);
+    const direct = available.filter((question) => directIds.has(question.id));
+    const other = available.filter((question) => !directIds.has(question.id));
+    let remaining = limit;
+    const directShown = direct.slice(0, remaining);
+    remaining -= directShown.length;
+    const otherShown = other.slice(0, Math.max(0, remaining));
+    const directGroup = renderQuestionGroup("Follow up on what you just heard", directShown);
+    const otherGroup = renderQuestionGroup("Explore another angle", otherShown);
+    if(directGroup) container.appendChild(directGroup);
+    if(otherGroup) container.appendChild(otherGroup);
+    displayedCount = directShown.length + otherShown.length;
+  }
+
+  if(available.length > displayedCount && !showAllQuestions){
+    byId("showAllBtn").classList.remove("hidden");
+    byId("showAllBtn").textContent = `Show all ${available.length} available questions`;
+  }
+
+  const canWrap = state.turns.length >= scenario.minimumTurnsBeforeWrap;
+  byId("wrapBtn").classList.toggle("hidden", !canWrap);
+}
+
+function setQuestionButtonsDisabled(disabled){
+  byId("questionChoices").querySelectorAll("button").forEach((button) => { button.disabled = disabled; });
+  byId("showAllBtn").disabled = disabled;
+  byId("wrapBtn").disabled = disabled;
+  byId("restartScenarioBtn").disabled = disabled;
+}
+
+function askQuestion(questionId){
+  if(responsePending) return;
+  const scenario = currentScenario();
+  const map = questionMap(scenario);
+  const question = map.get(questionId);
+  if(!question || state.askedIds.includes(questionId)) return;
+
+  responsePending = true;
+  setQuestionButtonsDisabled(true);
+  byId("chat").setAttribute("aria-busy", "true");
+  addMessage("student", "You", question.text);
+  const thinking = addMessage("user thinking", scenario.shortName, "Thinking...", {id:"thinkingMessage", hiddenFromAT:true});
+  announce(`${scenario.shortName} is thinking.`);
+
+  const delay = byId("responseDelay").checked ? 1000 : 100;
+  window.setTimeout(() => {
+    thinking.remove();
+    state.askedIds.push(question.id);
+    state.availableIds.delete(question.id);
+    question.unlocks.forEach((id) => state.availableIds.add(id));
+    state.lastUnlocked = [...question.unlocks];
+    addEvidence(question.evidence || []);
+    state.turns.push({
+      questionId: question.id,
+      question: question.text,
+      type: question.type,
+      quality: question.quality,
+      response: question.response,
+      coach: question.coach,
+      evidence: question.evidence || []
+    });
+
+    addMessage("user", scenario.shortName, question.response);
+    addCoachNote(question);
+    updateCoverage();
+    showAllQuestions = false;
+    renderQuestions();
+    byId("chat").setAttribute("aria-busy", "false");
+    responsePending = false;
+    setQuestionButtonsDisabled(false);
+    if(!byId("questionArea").classList.contains("hidden")){
+      byId("choiceHeading").focus();
+    }
+    announce(`${scenario.shortName} responded. New follow-up questions are available.`);
+  }, delay);
+}
+
+function startScenario(){
+  const scenario = currentScenario();
+  state = createState(scenario);
+  showAllQuestions = false;
+  responsePending = false;
+
+  byId("scenarioBadge").textContent = `Interview ${scenarioIndex + 1} of ${scenarios.length}`;
+  byId("interviewType").textContent = scenario.interviewType;
+  byId("scenarioTitle").textContent = scenario.title;
+  byId("stakeholder").textContent = scenario.stakeholder;
+  byId("description").textContent = scenario.description;
+  byId("challenge").textContent = scenario.challenge;
+  byId("goal").textContent = scenario.goal;
+  byId("fieldNotes").value = "";
+  byId("chat").innerHTML = "";
+  byId("endPanel").classList.add("hidden");
+  byId("questionArea").classList.remove("hidden");
+
+  addMessage("context", "Context", scenario.opening);
+  if(scenario.openingQuestion){
+    addMessage("student", "You", scenario.openingQuestion);
+  }
+  addMessage("user", scenario.shortName, scenario.openingResponse);
+  updateCoverage();
+  renderQuestions();
+  showSection("simulator");
+  byId("scenarioTitle").focus();
+  announce(`Interview ${scenarioIndex + 1}: ${scenario.title}.`);
+}
+
+function finishInterview(){
+  if(responsePending) return;
+  const scenario = currentScenario();
+  state.fieldNotes = byId("fieldNotes").value.trim();
+  if(!state.closeAdded){
+    addMessage("user", scenario.shortName, scenario.courtesyClose);
+    state.closeAdded = true;
+  }
+  logs[scenarioIndex] = state;
+  buildDebrief();
+}
+
+function qualityCounts(turns){
+  return turns.reduce((counts, turn) => {
+    counts[turn.quality] = (counts[turn.quality] || 0) + 1;
+    return counts;
+  }, {strong:0, mixed:0, weak:0});
+}
+
+function buildDebrief(){
+  const scenario = currentScenario();
+  const counts = qualityCounts(state.turns);
+  const missing = scenario.categories.filter((category) => !state.categoriesFound.has(category.id));
+  const evidenceByCategory = scenario.categories.map((category) => ({
+    category,
+    items: state.evidence.filter((item) => item.category === category.id)
+  })).filter((entry) => entry.items.length);
+
+  const evidenceHtml = evidenceByCategory.length ? evidenceByCategory.map((entry) => `
+    <div class="summary-card">
+      <h4>${escapeHtml(entry.category.label)}</h4>
+      <ul class="evidence-items">${entry.items.map((item) => `<li>${escapeHtml(item.text)}</li>`).join("")}</ul>
+    </div>`).join("") : "<p>No specific evidence was recorded.</p>";
+
+  const missingHtml = missing.length ? `
+    <h3>Angles you did not explore</h3>
+    <p>This is not a penalty. It shows how a different interview path could reveal additional evidence.</p>
+    <ul>${missing.map((category) => `<li><strong>${escapeHtml(category.label)}:</strong> ${escapeHtml(category.suggestedQuestion)}</li>`).join("")}</ul>` : "<p><strong>You explored every evidence area in this scenario.</strong></p>";
+
+  byId("debriefContent").innerHTML = `
+    <p><span class="badge">${escapeHtml(scenario.interviewType)}</span></p>
+    <h3>${escapeHtml(scenario.title)}: what you uncovered</h3>
+    <p>You asked <strong>${state.turns.length}</strong> questions and explored <strong>${state.categoriesFound.size} of ${scenario.categories.length}</strong> evidence areas.</p>
+    <div class="pattern-grid" aria-label="Questioning pattern">
+      <div class="pattern-card"><strong>${counts.strong}</strong><br>Generally productive questions</div>
+      <div class="pattern-card"><strong>${counts.mixed}</strong><br>Questions that needed follow-up</div>
+      <div class="pattern-card"><strong>${counts.weak}</strong><br>Limited-evidence questions</div>
+    </div>
+    <h3>Evidence collected</h3>
+    <div class="summary-grid">${evidenceHtml}</div>
+    ${missingHtml}
+    ${state.fieldNotes ? `<h3>Your field notes</h3><p>${escapeHtml(state.fieldNotes).replaceAll("\n","<br>")}</p>` : ""}`;
+
+  byId("scenarioReflection").value = "";
+  byId("nextScenarioBtn").textContent = scenarioIndex < scenarios.length - 1 ? "Begin the second interview" : "Continue to final reflection";
+  showSection("debrief");
+  byId("debriefTitle").focus();
+}
+
+function nextAfterDebrief(){
+  state.reflection = byId("scenarioReflection").value.trim();
+  logs[scenarioIndex] = state;
+  scenarioIndex += 1;
+  if(scenarioIndex < scenarios.length){
+    startScenario();
+  }else{
+    showSection("finalReflection");
+    byId("finalTitle").focus();
+  }
+}
+
+function scenarioReportHtml(scenario, log, index){
+  const categories = scenario.categories.map((category) => {
+    const items = log.evidence.filter((item) => item.category === category.id);
+    return `<li><strong>${escapeHtml(category.label)}:</strong> ${items.length ? items.map((item) => escapeHtml(item.text)).join("; ") : "Not explored"}</li>`;
+  }).join("");
+
+  const transcript = log.turns.map((turn, turnIndex) => `
+    <div class="path-step">
+      <h4>Question ${turnIndex + 1}: ${escapeHtml(turn.type)}</h4>
+      <p><strong>You asked:</strong> ${escapeHtml(turn.question)}</p>
+      <p><strong>${escapeHtml(scenario.shortName)} responded:</strong> ${escapeHtml(turn.response)}</p>
+      <p><strong>Interview-coach analysis:</strong> ${escapeHtml(turn.coach)}</p>
+      ${turn.evidence.length ? `<p><strong>Evidence added:</strong> ${turn.evidence.map((item) => escapeHtml(item.text)).join("; ")}</p>` : `<p><strong>Evidence added:</strong> No specific evidence. The question required recovery or a stronger follow-up.</p>`}
+    </div>`).join("");
+
+  return `
+    <section class="report-card">
+      <h3>Interview ${index + 1}: ${escapeHtml(scenario.title)}</h3>
+      <p><strong>Interview type:</strong> ${escapeHtml(scenario.interviewType)}</p>
+      <p><strong>Stakeholder:</strong> ${escapeHtml(scenario.stakeholder)}</p>
+      <p><strong>Questions asked:</strong> ${log.turns.length}</p>
+      <p><strong>Evidence areas explored:</strong> ${log.categoriesFound.size} of ${scenario.categories.length}</p>
+      <h4>Evidence by area</h4>
+      <ul>${categories}</ul>
+      <h4>Conversation path</h4>
+      ${transcript || "<p>No questions recorded.</p>"}
+      <h4>Field notes</h4>
+      <p>${log.fieldNotes ? escapeHtml(log.fieldNotes).replaceAll("\n","<br>") : "No field notes entered."}</p>
+      <h4>Scenario reflection</h4>
+      <p>${log.reflection ? escapeHtml(log.reflection).replaceAll("\n","<br>") : "No reflection entered."}</p>
+    </section>`;
+}
+
+function buildPlainText(finalResponses){
+  const lines = ["USER TESTING SIMULATION REPORT", ""];
+  logs.forEach((log, index) => {
+    const scenario = scenarios[index];
+    lines.push(`INTERVIEW ${index + 1}: ${scenario.title}`);
+    lines.push(`Type: ${scenario.interviewType}`);
+    lines.push(`Stakeholder: ${scenario.stakeholder}`);
+    lines.push(`Questions asked: ${log.turns.length}`);
+    lines.push(`Evidence areas explored: ${log.categoriesFound.size} of ${scenario.categories.length}`);
+    lines.push("");
+    lines.push("EVIDENCE BY AREA");
+    scenario.categories.forEach((category) => {
+      const items = log.evidence.filter((item) => item.category === category.id);
+      lines.push(`- ${category.label}: ${items.length ? items.map((item) => item.text).join("; ") : "Not explored"}`);
+    });
+    lines.push("");
+    lines.push("CONVERSATION PATH");
+    log.turns.forEach((turn, turnIndex) => {
+      lines.push(`${turnIndex + 1}. [${turn.type}] You asked: ${turn.question}`);
+      lines.push(`   ${scenario.shortName}: ${turn.response}`);
+      lines.push(`   Coach analysis: ${turn.coach}`);
+      lines.push(`   Evidence: ${turn.evidence.length ? turn.evidence.map((item) => item.text).join("; ") : "No specific evidence"}`);
+    });
+    lines.push("");
+    lines.push(`Field notes: ${log.fieldNotes || "None"}`);
+    lines.push(`Scenario reflection: ${log.reflection || "None"}`);
+    lines.push("\n----------------------------------------\n");
+  });
+  lines.push("FINAL REFLECTION");
+  lines.push(`1. Useful question types: ${finalResponses.r1 || "No response"}`);
+  lines.push(`2. Recovering from a weak question: ${finalResponses.r2 || "No response"}`);
+  lines.push(`3. Using evidence in the next design decision: ${finalResponses.r3 || "No response"}`);
+  return lines.join("\n");
+}
+
+function buildReport(){
+  const finalResponses = {
+    r1: byId("r1").value.trim(),
+    r2: byId("r2").value.trim(),
+    r3: byId("r3").value.trim()
+  };
+  const scenarioSections = logs.map((log, index) => scenarioReportHtml(scenarios[index], log, index)).join("");
+  byId("reportContent").innerHTML = `
+    <p>This report preserves the complete questioning path, stakeholder responses, evidence, field notes, and reflections from both simulations.</p>
+    ${scenarioSections}
+    <section class="report-card">
+      <h3>Final reflection</h3>
+      <p><strong>Question types that produced useful evidence:</strong><br>${escapeHtml(finalResponses.r1).replaceAll("\n","<br>") || "No response entered."}</p>
+      <p><strong>Recovering from a weak question:</strong><br>${escapeHtml(finalResponses.r2).replaceAll("\n","<br>") || "No response entered."}</p>
+      <p><strong>How evidence should influence the next design decision:</strong><br>${escapeHtml(finalResponses.r3).replaceAll("\n","<br>") || "No response entered."}</p>
+    </section>
+    <section class="report-card">
+      <h3>Key takeaway</h3>
+      <p>Strong user testing follows evidence rather than a fixed script. Productive interviewers ask about real behavior, probe specific moments, look for exceptions, and recover from weak questions with neutral follow-ups.</p>
+    </section>`;
+  reportPlainText = buildPlainText(finalResponses);
+  showSection("report");
+  byId("reportTitle").focus();
+}
+
+function restartSimulation(){
+  scenarioIndex = 0;
+  logs = [];
+  state = null;
+  showAllQuestions = false;
+  responsePending = false;
+  reportPlainText = "";
+  ["r1","r2","r3","scenarioReflection","fieldNotes"].forEach((id) => { byId(id).value = ""; });
+  showSection("intro");
+  byId("introTitle").focus();
+}
+
+byId("startBtn").addEventListener("click", () => { scenarioIndex = 0; logs = []; startScenario(); });
+byId("showAllBtn").addEventListener("click", () => { showAllQuestions = true; renderQuestions(); byId("choiceHeading").focus(); });
+byId("wrapBtn").addEventListener("click", finishInterview);
+byId("finishBtn").addEventListener("click", finishInterview);
+byId("nextScenarioBtn").addEventListener("click", nextAfterDebrief);
+byId("buildReportBtn").addEventListener("click", buildReport);
+byId("printBtn").addEventListener("click", () => window.print());
+byId("downloadBtn").addEventListener("click", () => {
+  const blob = new Blob([reportPlainText], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "User_Testing_Simulation_Report.txt";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+});
+byId("restartBtn").addEventListener("click", restartSimulation);
+byId("restartScenarioBtn").addEventListener("click", () => {
+  if(window.confirm("Restart this interview? The current conversation and notes for this scenario will be cleared.")) startScenario();
+});
+byId("fieldNotes").addEventListener("input", (event) => { if(state) state.fieldNotes = event.target.value; });
+</script>
+</body>
+</html>
